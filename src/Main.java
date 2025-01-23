@@ -5,6 +5,7 @@ import org.nocrala.tools.texttablefmt.Table;
 
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class Main {
     public static void main(String[] args) {
@@ -12,7 +13,6 @@ public class Main {
         String numberString;
         boolean checkAgain = false,checkseat = false;
         int numberHall,numberSeat,option = 0;
-        String[][][] hallArray;
         int[] unAvailableSeat,availableSeat,movie = new int[1];
         int cn = 0;
         String[] movieName = new String[1];
@@ -21,14 +21,18 @@ public class Main {
 
         String [][] newHallArray;
 
-        int countName = 1;
-        int countType = 1;
-        int countDuration=1;
+        int pageSize = 3;
+        int totalPages;
+        int currentPage;
+
+
         int available =0;
         int unavailable =0;
-        boolean checkNewMovie = true,showrecord = true;
+        boolean checkNewMovie = true,showrecord = true,checkTrueFalse=false;
         int countMovieBooked = 0;
         int movieID = 0;
+        boolean checkBooking = false;
+
 
         // color
         String RESET = "\u001B[0m";
@@ -63,7 +67,7 @@ public class Main {
         }while (checkAgain);
         numberSeat = Integer.parseInt(numberString);
      //   Menu main Feature
-        hallArray = new String[1][numberHall][numberSeat];
+
         newHallArray = new String[numberHall][numberSeat];
         availableSeat=new int[numberHall];
         unAvailableSeat=new int[numberHall];
@@ -101,6 +105,9 @@ public class Main {
 
             switch (option) {
                 case 1:
+                    System.out.println("\n=====================================================");
+                    System.out.println(GREEN + "\t\t\t INSERT INFORMATION OF MOVIE " + RESET);
+                    System.out.println("=====================================================");
                     do {
                             // Resize arrays if needed
                         if (cn >= movieName.length) {
@@ -120,13 +127,20 @@ public class Main {
 
                             System.out.print("Enter Movie Type: ");
                             movieType[cn] = scanner.nextLine();
-
-                            System.out.print("Enter Duration (min): ");
-                            duration[cn] = Integer.parseInt(scanner.nextLine());
-
+                            do {
+                                System.out.print("Enter Duration (min): ");
+                                String durationString = scanner.nextLine();
+                                if (!durationString.matches("[0-9]+")) {
+                                    System.out.println(RED+"\tInvalid duration!"+RESET);
+                                    checkAgain = true;
+                                }else{
+                                    checkAgain = false;
+                                    duration[cn] = Integer.parseInt(durationString);
+                                }
+                            }while (checkAgain);
                         System.out.println("Movie "+BLUE+movieName[cn] +RESET+" will show in hall #"+(cn+1)+"");
                             cn++; // Increment counter
-                        // Ask to continue
+
                             System.out.print("Do you want to continue? (Y/N): ");
                             String continueString = scanner.nextLine();
 
@@ -141,103 +155,145 @@ public class Main {
                     } while (checkAgain);
                     break;
                 case 2:
-                    do {
-                        Table t = new Table(8, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.ALL);
-                        t.setColumnWidth(0, 10, 26);
-                        t.setColumnWidth(1, 20, 26);
-                        t.setColumnWidth(2, 30, 26);
-                        t.setColumnWidth(3, 20, 26);
-                        t.setColumnWidth(4, 30, 26);
-                        t.setColumnWidth(5, 20, 26);
-                        t.setColumnWidth(6, 30, 26);
-                        t.setColumnWidth(7, 30, 26);
+                    if(cn==0){
+                        System.out.println(RED+"\nNo data to show. Please enter Movie Name!"+RESET);
+                        System.out.print("\n>>>>>>>>>> Press any key to continue >>>>>>>>>>>");
+                        scanner.nextLine();
+                    }else {
+                        totalPages = (int) Math.ceil((double) movieName.length / pageSize);
+                        currentPage = 1;
+                        do {
+                            int startIndex = (currentPage - 1) * pageSize;
+                            int endIndex = Math.min(startIndex + pageSize, movieName.length);
+
+                            Table t = new Table(8, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.ALL);
+                            t.setColumnWidth(0, 10, 26);
+                            t.setColumnWidth(1, 20, 26);
+                            t.setColumnWidth(2, 30, 26);
+                            t.setColumnWidth(3, 20, 26);
+                            t.setColumnWidth(4, 30, 26);
+                            t.setColumnWidth(5, 20, 26);
+                            t.setColumnWidth(6, 30, 26);
+                            t.setColumnWidth(7, 30, 26);
 
 
-                        t.addCell("Display All Movies ", numberStyle, (8));
-                        t.addCell(GREEN+" ID"+RESET, numberStyle);
-                        t.addCell(GREEN+"Movie"+RESET, numberStyle);
-                        t.addCell(GREEN+"Type"+RESET, numberStyle);
-                        t.addCell(GREEN+"Duration"+RESET, numberStyle);
-                        t.addCell(GREEN+"Hall"+RESET, numberStyle);
-                        t.addCell(GREEN+"Seat"+RESET, numberStyle);
-                        t.addCell(GREEN+"AvailableSeat"+RESET, numberStyle);
-                        t.addCell(RED+"Unavailable Seat"+RESET, numberStyle);
+                            t.addCell("Display All Movies ", numberStyle, (8));
+                            t.addCell(GREEN + " ID" + RESET, numberStyle);
+                            t.addCell(GREEN + "Movie" + RESET, numberStyle);
+                            t.addCell(GREEN + "Type" + RESET, numberStyle);
+                            t.addCell(GREEN + "Duration" + RESET, numberStyle);
+                            t.addCell(GREEN + "Hall" + RESET, numberStyle);
+                            t.addCell(GREEN + "Seat" + RESET, numberStyle);
+                            t.addCell(GREEN + "AvailableSeat" + RESET, numberStyle);
+                            t.addCell(RED + "Unavailable Seat" + RESET, numberStyle);
 
-                        for (int i = 0; i < movieName.length; i++) {
-                            t.addCell(String.valueOf((i+1)), numberStyle);
-                            t.addCell(BLUE + String.valueOf(movieName[i]), numberStyle);
-                            t.addCell( String.valueOf(movieType[i]), numberStyle);
-                            t.addCell(String.valueOf(duration[i]+" min") + RESET, numberStyle);
-                            t.addCell(String.valueOf(i+1) + RESET, numberStyle);
-                            t.addCell(String.valueOf(numberSeat) + RESET, numberStyle);
-                            t.addCell(String.valueOf(availableSeat[i]) + RESET, numberStyle);
-                            t.addCell(String.valueOf(unAvailableSeat[i]) + RESET, numberStyle);
-                        }
-                        System.out.println(t.render());
-                        System.out.println("1. Detail Movie \t 2. First \t 3. Next \t 4. Previous \t 5. Exit");
-                        String optionString = scanner.nextLine();
-                        switch (optionString) {
-                            case "1":
-                                // New code
-                                System.out.print("Enter Movie ID: ");
-                                movieID = Integer.parseInt(scanner.nextLine());
-                                Table t1 = new Table(15, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.ALL);
-                                for (int i = 0; i < 15; i++) {
-                                    t1.setColumnWidth(i, 10, 20);
-                                }
-                                t1.addCell("SCREEN HALL #" + (movieID), numberStyle, (15));
-                                for (int i = 0; i < newHallArray[movieID - 1].length; i++) {
-                                    if (newHallArray[movieID - 1][i].equals("+")) {
-                                        t1.addCell(GREEN + "( " + newHallArray[movieID - 1][i] + " ) " + (i + 1) + RESET, numberStyle);
-                                    } else {
-                                        t1.addCell(RED + "( " + newHallArray[movieID - 1][i] + " ) " + (i + 1) + RESET, numberStyle);
+                            for (int i = startIndex; i < endIndex; i++) {
+                                t.addCell(String.valueOf((i + 1)), numberStyle);
+                                t.addCell(BLUE + String.valueOf(movieName[i]), numberStyle);
+                                t.addCell(String.valueOf(movieType[i]), numberStyle);
+                                t.addCell(String.valueOf(duration[i] + " min") + RESET, numberStyle);
+                                t.addCell(String.valueOf(i + 1) + RESET, numberStyle);
+                                t.addCell(String.valueOf(numberSeat) + RESET, numberStyle);
+                                t.addCell(String.valueOf(availableSeat[i]) + RESET, numberStyle);
+                                t.addCell(String.valueOf(unAvailableSeat[i]) + RESET, numberStyle);
+                            }
+                            System.out.println(t.render());
+                            System.out.println("1. Detail Movie \t 2. First \t 3. Next \t 4. Previous \t 5. Last\t 6. Exit");
+                            String optionString = scanner.nextLine();
+                            switch (optionString) {
+                                case "1":
+                                    // New code
+                                    System.out.print("Enter Movie ID: ");
+                                    movieID = Integer.parseInt(scanner.nextLine());
+                                    Table t1 = new Table(15, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.ALL);
+                                    for (int i = 0; i < 15; i++) {
+                                        t1.setColumnWidth(i, 10, 20);
                                     }
-                                }
-                                System.out.println(t1.render());
-                                System.out.println("1. Booking Ticket\t\t2. Back");
-                                String optionString2 = scanner.nextLine();
-                                switch (optionString2) {
-                                    case "1":
-                                        System.out.print("Choose seat that you want to booking(e.g:1,2,3,4): ");
-                                        String bookingID = scanner.nextLine();
-                                        String[] parts = bookingID.split(",");
-                                        for (int i = 0; i < parts.length; i++) {
-                                            int seat = Integer.parseInt(parts[i]);
-                                            newHallArray[movieID - 1][seat - 1] = "-";
-                                            unAvailableSeat[movieID - 1]++;
-                                            availableSeat[movieID - 1]--;
+                                    t1.addCell("SCREEN HALL #" + (movieID), numberStyle, (15));
+                                    for (int i = 0; i < newHallArray[movieID - 1].length; i++) {
+                                        if (newHallArray[movieID - 1][i].equals("+")) {
+                                            t1.addCell(GREEN + "( " + newHallArray[movieID - 1][i] + " ) " + (i + 1) + RESET, numberStyle);
+                                        } else {
+                                            t1.addCell(RED + "( " + newHallArray[movieID - 1][i] + " ) " + (i + 1) + RESET, numberStyle);
                                         }
-                                        checkAgain = true;
-                                        for (int i = 0; i < movie.length; i++) {
-                                            if(movieID != movie[i]) {
-                                                movie = Arrays.copyOf(movie, countMovieBooked + 1);
-                                                movie[countMovieBooked] = movieID;
-                                                countMovieBooked++;
+                                    }
+                                    System.out.println(t1.render());
+                                    System.out.println("1. Booking Ticket\t\t2. Back");
+                                    String optionString2 = scanner.nextLine();
+                                    switch (optionString2) {
+                                        case "1":
+                                            while (true) {
+                                                System.out.print("Choose seat that you want to booking(e.g:1,2,3,4): ");
+                                                String bookingID = scanner.nextLine();
+                                                String[] parts = bookingID.split(",");
+                                                for (int i = 0; i < parts.length; i++) {
+                                                    if(Pattern.matches("[0-9]+", parts[i])) {
+                                                        int seat = Integer.parseInt(parts[i]);
+                                                        newHallArray[movieID - 1][seat - 1] = "-";
+                                                        unAvailableSeat[movieID - 1]++;
+                                                        availableSeat[movieID - 1]--;
+                                                        checkBooking = true;
+                                                    }else{
+                                                        checkBooking = false;
+                                                        System.out.println(RED+"Not allow input String and over then number of seat!"+RESET);
+                                                    }
+
+                                                }
+                                                if(checkBooking){
+                                                    break ;
+                                                }
+
                                             }
-                                        }
+
+                                            checkAgain = true;
+                                            for (int i = 0; i < movie.length; i++) {
+                                                if (movieID != movie[i]) {
+                                                    movie = Arrays.copyOf(movie, countMovieBooked + 1);
+                                                    movie[countMovieBooked] = movieID;
+                                                    countMovieBooked++;
+                                                }
+                                            }
 
 
-                                        break;
-                                    case "2":
-                                        checkAgain = true;
-                                        break;
-                                    default:
-                                        checkAgain = false;
+                                            break;
+                                        case "2":
+                                            checkAgain = true;
+                                            break;
+                                        default:
+                                            checkAgain = false;
 
-                                }
-                                break;
-                            case "2": break;
-                            case "3": break;
-                            case "4": break;
-                            case "5":
-                                checkAgain = false;
-                                break;
-                            default:
-                                System.out.println("Invalid option!");
-                                checkAgain = true;
-                                break;
-                        }
-                    }while (checkAgain);
+                                    }
+                                    break;
+                                case "2":
+                                    currentPage = 1;
+                                    checkAgain = true;
+                                    break;
+                                case "3":
+                                    if (currentPage < totalPages) {
+                                        currentPage++;
+                                    }
+                                    checkAgain = true;
+                                    break;
+                                case "4":
+                                    if (currentPage > 1) {
+                                        currentPage--;
+                                    }
+                                    checkAgain = true;
+                                    break;
+                                case "5":
+                                    currentPage = totalPages;
+                                    checkAgain = true;
+                                    break;
+                                case "6":
+                                    checkAgain = false;
+                                    break;
+                                default:
+                                    System.out.println(RED+"Invalid option!Please choose a valid option (1-6)!"+RESET);
+                                    checkAgain = true;
+                                    break;
+                            }
+                        } while (checkAgain);
+                    }
                     break;
                 case 3:
 
@@ -265,12 +321,10 @@ public class Main {
 
                     break;
                 case 4:
-                    hallArray = new String[movieName.length][numberHall][numberSeat];
-                    for (int i = 0; i < movieName.length; i++) {
-                        for (int j = 0; j < numberHall; j++) {
-                            for (int k = 0; k < numberSeat; k++) {
-                                hallArray[i][j][k] = "+";
-                            }
+                    newHallArray = new String[numberHall][numberSeat];
+                    for (int i = 0; i < newHallArray.length; i++) {
+                        for (int j = 0; j < numberSeat; j++) {
+                            newHallArray[i][j] = "+";
                         }
                         System.out.println("All Hall is already reset!");
                     }
