@@ -60,14 +60,14 @@ public class Main {
         }while (checkAgain);
         numberHall = Integer.parseInt(numberString);
         do{
-        System.out.print("\tEnter number of seat in each Hall: ");
-        numberString = scanner.nextLine();
-        if(!numberString.matches("[0-9]+") || Integer.parseInt(numberString)< 50){
-            System.out.println(RED+"\tNumber of seat is allowed only number and 50 seats up!"+RESET);
-            checkAgain = true;
-        }else {
-            checkAgain = false;
-        }
+            System.out.print("\tEnter number of seat in each Hall: ");
+            numberString = scanner.nextLine();
+            if(!numberString.matches("[0-9]+") || Integer.parseInt(numberString)< 50){
+                System.out.println(RED+"\tNumber of seat is allowed only number and 50 seats up!"+RESET);
+                checkAgain = true;
+            }else {
+                checkAgain = false;
+            }
         }while (checkAgain);
         numberSeat = Integer.parseInt(numberString);
      //   Menu main Feature
@@ -75,7 +75,7 @@ public class Main {
         newHallArray = new String[numberHall][numberSeat];
         availableSeat = new int[numberHall];
         unAvailableSeat = new int[numberHall];
-         movieName = new String[numberHall];
+        movieName = new String[numberHall];
         movieType =  new String[numberHall];
         duration = new int[numberHall];
         movie = new int[numberHall];
@@ -131,8 +131,18 @@ public class Main {
                                 scanner.nextLine();
                                 break;
                             }
-                            System.out.print("Enter Movie Name: ");
-                            movieName[cn] = scanner.nextLine();
+
+                            while (true){
+                                System.out.print("Enter Movie Name: ");
+                                String movieNameString = scanner.nextLine();
+
+                                if (Pattern.matches("\\w+", movieNameString)){
+                                    movieName[cn] = movieNameString;
+                                    break;
+                                }else {
+                                    System.out.println(RED+"Movie Name allow input only text."+RESET);
+                                }
+                            }
 
                             while (true) {
                                 System.out.print("Enter Movie Type: ");
@@ -175,7 +185,7 @@ public class Main {
                     break;
                 case 2:
                     if(cn==0){
-                        System.out.println(RED+"\nNo data to show. Please Insert Movie first!"+RESET);
+                        System.out.println(RED+"\nNo data to show. Please input Movie first!"+RESET);
                         System.out.print("\n>>>>>>>>>> Press any key to continue >>>>>>>>>>>");
                         scanner.nextLine();
                     }else {
@@ -263,7 +273,7 @@ public class Main {
                                                             for (int j = 0; j < newHallArray[movieID - 1].length; j++) {
                                                                 if (newHallArray[movieID - 1][j].equals("-")) {
                                                                     if (Integer.parseInt(parts[i]) == (j + 1)) {
-                                                                        System.out.println(RED + "Seat number " + parts[i] + " is alreay booked! please choose other seat !" + RESET);
+                                                                        System.out.println(RED + "Seat number " + parts[i] + " is already booked! please choose other seat !" + RESET);
                                                                         checkBooking = false;
                                                                         break stop;
                                                                     }
@@ -355,7 +365,7 @@ public class Main {
                     break;
                 case 3:
                     if(cn == 0){
-                        System.out.print(RED+"\tNo data to show1!\n"+RESET);
+                        System.out.print(RED+"\tNo data to show!\n"+RESET);
                         System.out.print(">>>>>>>>>> Press any key to continue >>>>>>>>>>>");
                         scanner.nextLine();
                         checkT1 = false;
